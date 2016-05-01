@@ -2,16 +2,9 @@ var express = require('express');
 var app = express();
 var router = express.Router();
 var path = require("path");
-var AWS = require('aws-sdk');
 var _ = require('underscore');
-
-AWS.config.update({
-    accessKeyId: 'AKIAJCAQWMNEIC7J7AWA', 
-    secretAccessKey: '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',
-    region: 'us-west-2'});
-    
-var dynamodbDoc = new AWS.DynamoDB.DocumentClient();
-var dynamodb = new AWS.DynamoDB();
+var unirest = require('unirest');
+var dynamoDB = require('./dynamoDB');
 
 router.get('/', function(req, res) {
   res.sendfile(path.join(__dirname + '/home.html'));
@@ -34,3 +27,21 @@ io.on('connection', function(socket){
     console.log('user disconnected');
   });
 });
+
+unirest.get('http://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_hour.geojson')
+    .end(function(response) {
+        if(response.body != null && response.body.features != null)
+            _.each(response.body.features, function(feature) {
+                if(feature != null && feature.geometry != null
+                && feature.geometry.coordinates != null && feature.id != null
+                && feature.properties.mag != null) {
+                    var earthquake = {};
+                    earthquake.id = feature.id;
+                    earthquake.lon = feature.geometry.coordinates[0];
+                    earthquake.lat = feature.geometry.coordinates[1];
+                    earthquake.magnitude = feature.properties.mag;
+                    console.log("earthquake: " + earthquake);
+                    dynamoDB.insertearthquake(earthquake);
+                }
+            });
+    });
