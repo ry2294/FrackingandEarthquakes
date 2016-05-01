@@ -12,16 +12,38 @@
     </head>
     
     <script>
+        var quakes = {};
         function initialize() {
             var socket = io();
             var streammap = new google.maps.Map(document.getElementById('streammap'), {
-                zoom: 3,
+                zoom: 2,
                 center: {lat: 39.500, lng: -98.350},
                 mapTypeId: google.maps.MapTypeId.SATELLITE
             });
             
+            socket.on('quake', function(quake){
+                if(quakes[quake.id] != null) {return; console.log('ignoring');}
+                else {quakes[quake.id] = quake; console.log(quake); quakes[quake.id]}
+                var marker = new google.maps.Marker({
+                    position: {lat: parseFloat(quake.lat), lng: parseFloat(quake.lon)},
+                    map: streammap,
+                    title: 'Earth Quake',
+                });
+                marker.info = new google.maps.InfoWindow({
+                    position: {lat: parseFloat(quake.lat), lng: parseFloat(quake.lon)},
+                    content: '<h5>Id: ' + quake.id +'</h5>'+ 
+                            '<h5>Magnitude: ' + quake.magnitude + '</h5>',
+                    maxWidth: 200
+                });
+                if(quake.wells.length > 0) marker.setIcon('http://maps.google.com/mapfiles/ms/icons/red-dot.png');
+                else marker.setIcon('http://maps.google.com/mapfiles/ms/icons/blue-dot.png');
+                marker.addListener('click', function(){
+                    this.info.open(streammap, this);
+                });
+            });
+            
             var historicalmap = new google.maps.Map(document.getElementById('historicalmap'), {
-                zoom: 3,
+                zoom: 2,
                 center: {lat: 39.500, lng: -98.350},
                 mapTypeId: google.maps.MapTypeId.SATELLITE
             });

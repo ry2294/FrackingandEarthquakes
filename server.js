@@ -23,12 +23,14 @@ var server = http.listen(process.env.PORT || 5000, function(){
 var io = require('socket.io').listen(server);
 io.on('connection', function(socket){
   console.log('a user connected');
+  dynamoDB.fetchstream(io);
   socket.on('disconnect', function(){
     console.log('user disconnected');
   });
 });
 
-unirest.get('http://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_hour.geojson')
+var pollusgs = function () {
+  unirest.get('http://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_hour.geojson')
     .end(function(response) {
         if(response.body != null && response.body.features != null)
             _.each(response.body.features, function(feature) {
@@ -41,7 +43,10 @@ unirest.get('http://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_hour.g
                     earthquake.lat = feature.geometry.coordinates[1];
                     earthquake.magnitude = feature.properties.mag;
                     console.log("earthquake: " + earthquake);
-                    dynamoDB.insertearthquake(earthquake);
+                    dynamoDB.insertearthquake(earthquake, io);
                 }
             });
     });
+};
+
+setInterval(pollusgs, 1 * 1000); // Poll USGS for every 1 hour time interval
