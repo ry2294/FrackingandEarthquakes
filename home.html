@@ -13,6 +13,7 @@
     
     <script>
         var quakes = {};
+        var wellsdata = [];
         function initialize() {
             var socket = io();
             var streammap = new google.maps.Map(document.getElementById('streammap'), {
@@ -21,22 +22,45 @@
                 mapTypeId: google.maps.MapTypeId.SATELLITE
             });
             
+            socket.on('wells', function(wells) {
+                for(var i = 0; i < wells.length; i++) {
+                    var well = wells[i];
+                    if(well != null && well.lat != null && well.lon != null) {
+                        console.log(well);
+                        wellsdata.push(new google.maps.LatLng(parseFloat(well.lat), parseFloat(well.lon)));
+                    }
+                }
+                
+                console.log(wellsdata.length);
+                var wellsmap = new google.maps.visualization.HeatmapLayer({
+                    data: wellsdata
+                });
+                wellsmap.setMap(streammap);
+            });
+            
             socket.on('quake', function(quake){
-                if(quakes[quake.id] != null) {return; console.log('ignoring');}
-                else {quakes[quake.id] = quake; console.log(quake); quakes[quake.id]}
+                if(quakes[quake.id] != null) {return;}
+                else {quakes[quake.id] = quake; quakes[quake.id]}
                 var marker = new google.maps.Marker({
                     position: {lat: parseFloat(quake.lat), lng: parseFloat(quake.lon)},
                     map: streammap,
                     title: 'Earth Quake',
                 });
+                var content = '<h5>Earthquake id: ' + quake.id + ' magnitude: ' + quake.magnitude 
+                + ' lat: ' + quake.lat + ' lon: ' + quake.lon + '</h5>';
+                if(quake.wells.length > 0) {
+                    marker.setIcon('http://maps.google.com/mapfiles/ms/icons/red-dot.png');
+                    content += '<h4>Near by Wells</h4>';
+                    for(var i = 0; i < quake.wells.length; i++) {
+                        var well = quake.wells[i];
+                        content += '<h6>Well: ' + well.name + ' ' + well.api + '</h6>';
+                    }
+                } else marker.setIcon('http://maps.google.com/mapfiles/ms/icons/blue-dot.png');
                 marker.info = new google.maps.InfoWindow({
                     position: {lat: parseFloat(quake.lat), lng: parseFloat(quake.lon)},
-                    content: '<h5>Id: ' + quake.id +'</h5>'+ 
-                            '<h5>Magnitude: ' + quake.magnitude + '</h5>',
+                    content: content,
                     maxWidth: 200
                 });
-                if(quake.wells.length > 0) marker.setIcon('http://maps.google.com/mapfiles/ms/icons/red-dot.png');
-                else marker.setIcon('http://maps.google.com/mapfiles/ms/icons/blue-dot.png');
                 marker.addListener('click', function(){
                     this.info.open(streammap, this);
                 });

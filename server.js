@@ -23,7 +23,7 @@ var server = http.listen(process.env.PORT || 5000, function(){
 var io = require('socket.io').listen(server);
 io.on('connection', function(socket){
   console.log('a user connected');
-  dynamoDB.fetchstream(io);
+  dynamoDB.fetchwells(io);
   socket.on('disconnect', function(){
     console.log('user disconnected');
   });
@@ -37,6 +37,7 @@ var pollusgs = function () {
                 if(feature != null && feature.geometry != null
                 && feature.geometry.coordinates != null && feature.id != null
                 && feature.properties.mag != null) {
+                    console.log(JSON.stringify(feature));
                     var earthquake = {};
                     earthquake.id = feature.id;
                     earthquake.lon = feature.geometry.coordinates[0];
@@ -49,4 +50,4 @@ var pollusgs = function () {
     });
 };
 
-setInterval(pollusgs, 1 * 1000); // Poll USGS for every 1 hour time interval
+setInterval(pollusgs, 60 * 60 * 1000); // Poll USGS for every 1 hour time interval

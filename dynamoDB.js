@@ -1,6 +1,7 @@
 var _ = require('underscore');
 var AWS = require('aws-sdk');
 var pg = require('pg');
+var sleep = require('sleep');
 
 var conString = "postgres://rakesh891:!QAZ2wsx@postgresserver.cvti2cxbktmb.us-west-2.rds.amazonaws.com/postgres";
 
@@ -47,6 +48,28 @@ dynamoDB.fetchstream = function (io) {
     		});
     	}
 	});
+};
+
+dynamoDB.fetchwells = function(io) {
+    // this initializes a connection pool
+    // it will keep idle connections open for a (configurable) 30 seconds
+    // and set a limit of 10 (also configurable)
+    pg.connect(conString, function(err, client, done) {
+        if(err) return console.error('error fetching client from pool', err);
+        client.query('select distinct lat, lon from wells', 
+        [], 
+        function(err, result) {
+            var wells = [];
+            done(); //call to release the client back to the pool 
+            if(err) return console.error('error running query', err);
+            for(var i = 0; i < result.rows.length; i++) {
+                console.log(result.rows[i]);
+                wells.push(result.rows[i])
+            }
+            io.emit("wells", wells);
+            dynamoDB.fetchstream(io);
+        });
+    });
 };
 
 dynamoDB.insertearthquake = function (earthquake, io) {
