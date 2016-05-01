@@ -1,0 +1,47 @@
+<html>
+    <head>
+        <title>Fracking & Earthquake</title>
+        <script src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css">
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+        <script src="https://cdn.socket.io/socket.io-1.3.7.js"></script>
+        <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+        <script async defer
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBQ0G5v0Bcx7pxFnJi3c6DcM-97rjMsUho&signed_in=true&libraries=visualization&callback=initialize"></script>
+    </head>
+    
+    <script>
+        function initialize() {
+            var socket = io();
+            var streammap = new google.maps.Map(document.getElementById('streammap'), {
+                zoom: 3,
+                center: {lat: 39.500, lng: -98.350},
+                mapTypeId: google.maps.MapTypeId.SATELLITE
+            });
+            
+            var historicalmap = new google.maps.Map(document.getElementById('historicalmap'), {
+                zoom: 3,
+                center: {lat: 39.500, lng: -98.350},
+                mapTypeId: google.maps.MapTypeId.SATELLITE
+            });
+        };
+    </script>
+    
+    <body>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12">
+                    <h3>Streaming Data</h3>
+                    <div id="streammap" class="jumbotron"  style="height:350px;"></div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <h3>Historical Data</h3>
+                    <div id="historicalmap" class="jumbotron"  style="height:350px;"></div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
