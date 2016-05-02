@@ -17,25 +17,22 @@
         function initialize() {
             var socket = io();
             var streammap = new google.maps.Map(document.getElementById('streammap'), {
-                zoom: 2,
+                zoom: 4,
                 center: {lat: 39.500, lng: -98.350},
                 mapTypeId: google.maps.MapTypeId.SATELLITE
             });
             
             socket.on('wells', function(wells) {
-                for(var i = 0; i < wells.length; i++) {
-                    var well = wells[i];
-                    if(well != null && well.lat != null && well.lon != null) {
-                        console.log(well);
-                        wellsdata.push(new google.maps.LatLng(parseFloat(well.lat), parseFloat(well.lon)));
-                    }
-                }
+                for(var i = 0; i < wells.length; i++)
+                    if(wells[i] != null && wells[i].lat != null && wells[i].lon != null)
+                        wellsdata.push(new google.maps.LatLng(parseFloat(wells[i].lat), parseFloat(wells[i].lon)));
                 
                 console.log(wellsdata.length);
                 var wellsmap = new google.maps.visualization.HeatmapLayer({
                     data: wellsdata
                 });
                 wellsmap.setMap(streammap);
+                $("#loading").hide();
             });
             
             socket.on('quake', function(quake){
@@ -46,14 +43,14 @@
                     map: streammap,
                     title: 'Earth Quake',
                 });
-                var content = '<h5>Earthquake id: ' + quake.id + ' magnitude: ' + quake.magnitude 
-                + ' lat: ' + quake.lat + ' lon: ' + quake.lon + '</h5>';
+                var content = '<h4>Earthquake </h4><h6>magnitude: ' + quake.magnitude 
+                + ' lat: ' + quake.lat + ' lon: ' + quake.lon + '</h6>';
                 if(quake.wells.length > 0) {
                     marker.setIcon('http://maps.google.com/mapfiles/ms/icons/red-dot.png');
                     content += '<h4>Near by Wells</h4>';
                     for(var i = 0; i < quake.wells.length; i++) {
                         var well = quake.wells[i];
-                        content += '<h6>Well: ' + well.name + ' ' + well.api + '</h6>';
+                        content += '<h6>Well: ' + well.name + ' lat: ' + well.lat + ' lon: ' + well.lon + '</h6>';
                     }
                 } else marker.setIcon('http://maps.google.com/mapfiles/ms/icons/blue-dot.png');
                 marker.info = new google.maps.InfoWindow({
@@ -65,12 +62,6 @@
                     this.info.open(streammap, this);
                 });
             });
-            
-            var historicalmap = new google.maps.Map(document.getElementById('historicalmap'), {
-                zoom: 2,
-                center: {lat: 39.500, lng: -98.350},
-                mapTypeId: google.maps.MapTypeId.SATELLITE
-            });
         };
     </script>
     
@@ -78,15 +69,13 @@
         <div class="container">
             <div class="row">
                 <div class="col-md-12">
+                    <h2>Final Project: Are all earthquakes natural ?</h2>
+                    <p class="well">Our project's main idea is to find out whether all earthquakes are natural ? Or are there any human induced earthquakes ? The answer for this is that there are earthquakes which are caused by human activities such as Waste water injection resulting from fracking. For obtaining correlation between earthquakes and injection wells we have collected present active injection wells data and have plotted it on the below Google Map as a Heat Map. So, all the yellow and red colored heatmap plotted is basically the locations of all active injection wells in USA.For every hour period, we poll USGS Data feed which provides the live earthquake data around the world. We filter the earthquakes based on US geographic boundaries and pass them to our algorithm which classifies an earthquake into one of the two buckets. Manmade or Source Ambiguous. So all the Red Markers represent the Manmade bucket where as Blue markers represent the Source Ambiguous bucket. On clicking any marker it provides details regarding the earthquake magnitude, lat, long etc. In case of Manmade, it even provides data related to injection wells that may have caused that earthquake. The Algorithm that we devised to classify an earthquake as Manmade or not, basically has two steps or dimensions. Firstly, it considers if there exists a Fluid Injection well near by the origin of the earthquake. For this, we have gathered all the active injection wells data on USA and which we have plotted as a HeatMap. Secondly, the algorithm rejects any earthquake near a fault line. For this we have used the historical earthquake data which have occurred prior to 1990, where year 1990 was the origin of the Fracking. So, below Map shows our results where earthquakes near Oklahoma majorily are caused due to Waste Water Injection wells and are hence Induced or Manmade Earthquakes.</p>
                     <h3>Streaming Data</h3>
-                    <div id="streammap" class="jumbotron"  style="height:350px;"></div>
+                    <h6 id="loading">Loading Injection Wells Data ... Please wait</h6>
+                    <div id="streammap" class="jumbotron"  style="height:500px;"></div>
                 </div>
             </div>
-            <div class="row">
-                <div class="col-md-12">
-                    <h3>Historical Data</h3>
-                    <div id="historicalmap" class="jumbotron"  style="height:350px;"></div>
-                </div>
             </div>
         </div>
     </body>
