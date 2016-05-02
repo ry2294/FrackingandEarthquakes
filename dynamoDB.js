@@ -3,18 +3,23 @@ var AWS = require('aws-sdk');
 var pg = require('pg');
 var config = require('./config');
 
+// represents the connection with the postgres storage.
 var conString = "postgres://rakesh891:!QAZ2wsx@postgresserver.cvti2cxbktmb.us-west-2.rds.amazonaws.com/postgres";
 
+/*
+We create an instance of AWS, pass in the keys from config file and instantiate dynamoDB and dynamodbDoc for interacting with DynamoDB.
+*/
 AWS.config.update({
     accessKeyId: config.accessKeyId, 
     secretAccessKey: config.secretAccessKey,
     region: 'us-west-2'});
-
 var dynamoDB = {};
-
 var dynamodbDoc = new AWS.DynamoDB.DocumentClient();
 var dynamodb = new AWS.DynamoDB();
 
+/*
+fetchstream method connects with the DynamoDB storage where the live earthquakes are stored and retrieves all the live earthquakes. For each earthquake, it communicates with Postgres storage where the historical data of injection wells and eartquakes are stored. For each earthquake, we send in the boundary coordinates of the region to our algorithm present as a function in Postgres. The boundary coordinates of the region of the earthquake is calculated through calling getBoundingBox. Then the Postgres function, present and described in dbqueries.sql, is invoked. Once the algorithm completes, it returns a set of wells that can induce this earthquake. If the result set is empty, then this earthquake is classified as Source Ambiguous else Manmande. We, then pass in this information to all clients browsers usign web sockets. Finally this information is plotted in the client's browser on the map as a marker.
+*/
 dynamoDB.fetchstream = function (io) {
     dynamodb.scan({TableName: "earthquakes"}, function(error, quakes) {
     	if (error) console.log(JSON.stringify(error));
@@ -44,6 +49,9 @@ dynamoDB.fetchstream = function (io) {
 	});
 };
 
+/*
+fetchwells method communicates with postgres, to retrieve all the active wells present among the total historical data on injections wells. For each well we retrieve its lat and long coordinates which we use to plot a heat map. These coordinates are sent to the clients browsers where they are plotted as a heatmap on the google map. So, the yellow and red colored heatmap present on the Google map depicts the active injection wells across US. We retrieve this by querying the database and accessing the wells tableand using the active flag. We then aggregate all the wells data and push them through the web sockets to clients browsers.
+*/
 dynamoDB.fetchwells = function(socket) {
     // this initializes a connection pool
     // it will keep idle connections open for a (configurable) 30 seconds
@@ -64,6 +72,9 @@ dynamoDB.fetchwells = function(socket) {
     });
 };
 
+/*
+insertearthquakes method is called whenever the server polls the USGS data feed for new live data during every 1 hour period interval. For each new earthquake, this method connects with DynamoDB and creates a new entry. For each earthquake we store the earthquake id, lat, long and magnitude. This data will be used in the browser's javascript to plot live earthquake data. Once the storage in DynamoDB is successful, fetchstream method is invoked to push the new earthquake data to all client's browsers.
+*/
 dynamoDB.insertearthquake = function (earthquake, io) {
     dynamodbDoc.put({
         TableName: 'earthquakes',
@@ -79,6 +90,9 @@ dynamoDB.insertearthquake = function (earthquake, io) {
     });
 };
 
+/*
+
+*/
 dynamoDB.getBoundingBox = function (centerPoint, distance) {
     var MIN_LAT, MAX_LAT, MIN_LON, MAX_LON, R, radDist, degLat, degLon, radLat, radLon, minLat, maxLat, minLon, maxLon, deltaLon;
     if (distance < 0) {return 'Illegal arguments';}
