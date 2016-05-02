@@ -12,6 +12,9 @@
     </head>
     
     <script>
+        /*
+        We create a socket using socket.io and listen on wells and quake channel. On wells channel, the server sends active injection wells data to plot them on heatmap. The quake channel is used to send live earthquakes data with their classification to plot them on the map as blue/red markers.
+        */
         var quakes = {};
         var wellsdata = [];
         function initialize() {

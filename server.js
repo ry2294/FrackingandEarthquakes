@@ -7,26 +7,37 @@ var unirest = require('unirest');
 var dynamoDB = require('./dynamoDB');
 var config = require('./config');
 
+/*
+Check if the keys exist in the config.ja file. Else please paste them from keys file.
+*/
 if(config.accessKeyId == null || config.secretAccessKey == '' ||
 config.secretAccessKey == null || config.secretAccessKey == '') {
   console.log('Please add accessKeyId and secretAccessKey to config.js file');
   process.exit();
 }
 
+/*
+Sends the homepage of the website at the URL: localhost:5000/
+*/
 router.get('/', function(req, res) {
   res.sendfile(path.join(__dirname + '/home.html'));
 });
 
 app.use('/', router);
 
+/*
+Creating the server application using nodejs and express frameworks.
+*/
 var http = require('http').Server(app);
 var server = http.listen(process.env.PORT || 5000, function(){
   var host = server.address().address;
   var port = server.address().port;
-
   console.log('App listening at http://%s:%s', host, port);
 });
 
+/*
+Creates a websocket io using socket.io module. Once a user connects to the server, a socket gets created. For each new connected user, the server sends the injection wells data for creating heatmap and live earthquakes data stored in DynamoDB to the client's browsers. This is done by invoking the fetchwells and fetchstream functions.
+*/
 var io = require('socket.io').listen(server);
 io.on('connection', function(socket){
   console.log('a user connected');
@@ -37,6 +48,9 @@ io.on('connection', function(socket){
   });
 });
 
+/*
+pollusgs method is invoked for every 1 hour time period. During each invocation, a get request is sent to http://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_hour.geojson usgs url endpoint which fetches the last 1 hour earth quakes data around the world. For each earthquake data, we filter out the ones who are not in the boundaries of US. The filtered earthquakes are inserted into the DynamoDB through invocation of insertearthquake function. 
+*/
 var pollusgs = function () {
   unirest.get('http://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_hour.geojson')
     .end(function(response) {
@@ -64,4 +78,7 @@ var pollusgs = function () {
     });
 };
 
-setInterval(pollusgs, 60 * 60 * 1000); // Poll USGS for every 1 hour time interval
+/*
+Poll USGS for every 1 hour time interval
+*/
+setInterval(pollusgs, 60 * 60 * 1000);

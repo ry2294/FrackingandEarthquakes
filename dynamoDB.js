@@ -91,7 +91,9 @@ dynamoDB.insertearthquake = function (earthquake, io) {
 };
 
 /*
-
+getBoundingBox method computes the region around a given point, in our case the source of the earthquake or the earthquake coordinates, and a radius, it calculates the boundary points for the region. For this it takes into account the earth's radius as 6378.1km and values PI to perform trigonometric operations. Sin and Cos trigonometric methods are used for the computations. Below is the formual that is used by this method.
+cos(sin(sourcelat) * sin(destlat) + cos(sourcelat) * cos(destlat) * cos(destlon - (sourcelon))) * 6371 <= distance.
+We have implemented the above formula to derive the boundary coordinates of a region surrounding around the earthquake. These boundary coordinates are used to identify the injection wells.
 */
 dynamoDB.getBoundingBox = function (centerPoint, distance) {
     var MIN_LAT, MAX_LAT, MIN_LON, MAX_LON, R, radDist, degLat, degLon, radLat, radLon, minLat, maxLat, minLon, maxLon, deltaLon;
