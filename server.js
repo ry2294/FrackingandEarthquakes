@@ -5,6 +5,13 @@ var path = require("path");
 var _ = require('underscore');
 var unirest = require('unirest');
 var dynamoDB = require('./dynamoDB');
+var config = require('./config');
+
+if(config.accessKeyId == null || config.secretAccessKey == '' ||
+config.secretAccessKey == null || config.secretAccessKey == '') {
+  console.log('Please add accessKeyId and secretAccessKey to config.js file');
+  process.exit();
+}
 
 router.get('/', function(req, res) {
   res.sendfile(path.join(__dirname + '/home.html'));

@@ -1,12 +1,13 @@
 var _ = require('underscore');
 var AWS = require('aws-sdk');
 var pg = require('pg');
+var config = require('./config');
 
 var conString = "postgres://rakesh891:!QAZ2wsx@postgresserver.cvti2cxbktmb.us-west-2.rds.amazonaws.com/postgres";
 
 AWS.config.update({
-    accessKeyId: '', 
-    secretAccessKey: '',
+    accessKeyId: config.accessKeyId, 
+    secretAccessKey: config.secretAccessKey,
     region: 'us-west-2'});
 
 var dynamoDB = {};
