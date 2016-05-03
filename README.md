@@ -6,10 +6,12 @@ For our final project, we have created a NodeJS web server which polls the USGS 
 ### Commands
 To run this application, clone this repository and run the below commands inside the repository folder FrackingandEarthquakes.
 
-1. npm install // installs the node modules required
+1. Please install nodejs by following the steps provided in the following link. https://nodejs.org/en/download/package-manager/ 
 
-2. Please add "accessKeyId" and "secretAccessKey" values to config.js file. I have uploaded a "keys" file in the project submission. Since, AWS does not allow to keep confidential information on Public GitHub repo, I have added this information in the keys file. Please replace the accessKeyId and secretAccessKey values from keys file to config.js file and execute the next command.
+2. npm install // installs the node modules required
 
-3. node server.js // runs the server and starts consuming tweets
+3. Please add "accessKeyId" and "secretAccessKey" values to config.js file. I have uploaded a "keys" file in the project submission. Since, AWS does not allow to keep confidential information on Public GitHub repo, I have added this information in the keys file. Please replace the accessKeyId and secretAccessKey values from keys file to config.js file and execute the next command.
 
-4. open url: localhost:5000/ in browser
+4. node server.js // runs the server and starts consuming tweets
+
+5. open url: localhost:5000/ in browser
